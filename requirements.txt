@@ -1,0 +1,10 @@
+implicit
+pandas
+pandas-gbq
+scipy
+python-dotenv
+numpy
+Flask
+Flask-BasicAuth
+gunicorn
+watchdog
