@@ -26,7 +26,7 @@ save_npz(MATRIX_PATH + "/base-sparse", votes)
 posts_to_id = {k: v for v, k in enumerate(data["post_id"].cat.categories)}
 ids_to_post = {k: v for v, k in posts_to_id.items()}
 model = AlternatingLeastSquares(use_gpu=False)
-model.fit(_votes)
+model.fit(votes)
 with open(MATRIX_PATH + "/model.pickle", "wb") as file:
   pickle.dump(model, file)
 with open(MATRIX_PATH + "/p2i.pickle", "wb") as file:
