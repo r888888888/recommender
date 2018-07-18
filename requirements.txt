@@ -7,4 +7,3 @@ numpy
 Flask
 Flask-BasicAuth
 gunicorn
-watchdog

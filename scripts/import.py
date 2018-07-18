@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv
 import pickle
 from implicit.als import AlternatingLeastSquares
-from pathlib import Path
+import signal
 
 load_dotenv(find_dotenv())
 MATRIX_PATH = os.environ.get("MATRIX_PATH")
@@ -33,4 +33,5 @@ with open(MATRIX_PATH + "/p2i.pickle", "wb") as file:
   pickle.dump(posts_to_id, file)
 with open(MATRIX_PATH + "/i2p.pickle", "wb") as file:
   pickle.dump(ids_to_post, file)
-Path(MATRIX_PATH + "/updated").touch()
+pid = int(open("/var/run/recommender/pid").read())
+os.kill(pid, signal.SIGHUP)

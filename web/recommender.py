@@ -6,22 +6,13 @@ from implicit.als import AlternatingLeastSquares
 import numpy as np
 from scipy.sparse import coo_matrix, load_npz
 import pickle
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-
-class DataUpdateHandler(FileSystemEventHandler):
-  def on_modified(self, event):
-    if "updated" in event.src_path:
-      load_model()
+import datetime
 
 load_dotenv(find_dotenv())
 MATRIX_PATH = os.environ.get("MATRIX_PATH")
-event_handler = DataUpdateHandler()
-observer = Observer()
-observer.schedule(event_handler, MATRIX_PATH, recursive=True)
-observer.start()
 
 def load_model():
+  global _last_loaded
   global _votes
   global _votes_csr
   global _model
@@ -35,6 +26,7 @@ def load_model():
     _posts_to_id = pickle.load(file)
   with open(MATRIX_PATH + "/model.pickle", "rb") as file:
     _model = pickle.load(file)
+  _last_loaded = datetime.datetime.now()
 
 app = Flask("recommender")
 app.config["BASIC_AUTH_USERNAME"] = "danbooru"
@@ -68,6 +60,11 @@ def similar(post_id):
   matches = _model.similar_items(_posts_to_id[post_id])
   matches = [(_ids_to_post[idx], str(score)) for idx, score in matches]
   return jsonify(matches)
+
+@app.route("/updated")
+def updated():
+  global _last_loaded
+  return jsonify(str(_last_loaded))
 
 if __name__ == "__main__":
   app.run(debug=False, host="0.0.0.0")
