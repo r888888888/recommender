@@ -70,7 +70,7 @@ def similar(post_id):
   if not post_id in _posts_to_id:
     return jsonify(error="post not in database"), 404
   matches = _model.similar_items(_posts_to_id[post_id])
-  matches = [(_ids_to_post[idx], score) for idx, score in matches]
+  matches = [(_ids_to_post[idx], str(score)) for idx, score in matches]
   return jsonify(matches)
 
 if __name__ == "__main__":
