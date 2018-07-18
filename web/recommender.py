@@ -44,6 +44,7 @@ app = Flask("recommender")
 app.config["BASIC_AUTH_USERNAME"] = "danbooru"
 app.config["BASIC_AUTH_PASSWORD"] = os.environ.get("RECOMMENDER_KEY")
 basic_auth = BasicAuth(app)
+load_model()
 
 @app.after_request
 def set_cors(response):
