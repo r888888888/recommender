@@ -26,8 +26,6 @@ observer.schedule(event_handler, watch_path, recursive=True)
 observer.start()
 
 def load_model():
-  print("Loading data")
-
   global _votes
   global _model
   global _posts_to_id
@@ -37,8 +35,8 @@ def load_model():
     _ids_to_post = pickle.load(file)
   with open(os.environ.get("MATRIX_PATH") + "/p2i.pickle", "rb") as file:
     _posts_to_id = pickle.load(file)
-  _model = AlternatingLeastSquares()
-  _model.fit(_votes)
+  with open(os.environ.get("MATRIX_PATH") + "/model.pickle", "rb") as file:
+    _model = pickle.load(file)
 
 app = Flask("recommender")
 app.config["BASIC_AUTH_USERNAME"] = "danbooru"

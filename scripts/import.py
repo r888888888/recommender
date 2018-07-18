@@ -6,6 +6,7 @@ from scipy.sparse import coo_matrix, save_npz
 from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv
 import pickle
+from implicit.als import AlternatingLeastSquares
 
 load_dotenv(find_dotenv())
 
@@ -24,6 +25,10 @@ votes = coo_matrix((np.ones(data.shape[0]), (data["post_id"].cat.codes.copy(), d
 save_npz(os.environ.get("MATRIX_PATH") + "/base-sparse", votes)
 posts_to_id = {k: v for v, k in enumerate(data["post_id"].cat.categories)}
 ids_to_post = {k: v for v, k in posts_to_id.items()}
+model = AlternatingLeastSquares(use_gpu=False)
+model.fit(_votes)
+with open(os.environ.get("MATRIX_PATH") + "/model.pickle", "wb") as file:
+  pickle.dump(model, file)
 with open(os.environ.get("MATRIX_PATH") + "/p2i.pickle", "wb") as file:
   pickle.dump(posts_to_id, file)
 with open(os.environ.get("MATRIX_PATH") + "/i2p.pickle", "wb") as file:
