@@ -23,10 +23,12 @@ observer.start()
 
 def load_model():
   global _votes
+  global _votes_csr
   global _model
   global _posts_to_id
   global _ids_to_post
   _votes = load_npz(MATRIX_PATH + "/base-sparse.npz")
+  _votes_csr = _votes.tocsr()
   with open(MATRIX_PATH + "/i2p.pickle", "rb") as file:
     _ids_to_post = pickle.load(file)
   with open(MATRIX_PATH + "/p2i.pickle", "rb") as file:
@@ -48,10 +50,10 @@ def set_cors(response):
 @app.route("/recommend/<int:user_id>")
 @basic_auth.required
 def recommend(user_id):
-  global _votes
+  global _votes_csr
   global _model
   global _ids_to_post
-  matches = _model.recommend(user_id, _votes)
+  matches = _model.recommend(user_id, _votes_csr)
   matches = [(_ids_to_post[idx], score) for idx, score in matches]
   return jsonify(matches)
 
