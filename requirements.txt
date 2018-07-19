@@ -7,3 +7,5 @@ numpy
 Flask
 Flask-BasicAuth
 gunicorn
+pybinding
+nmslib

@@ -3,6 +3,7 @@ from dotenv import load_dotenv, find_dotenv
 from flask import Flask, jsonify, request
 from flask_basicauth import BasicAuth
 from implicit.als import AlternatingLeastSquares
+from implicit.approximate_als import NMSLibAlternatingLeastSquares
 import numpy as np
 from scipy.sparse import coo_matrix, load_npz
 import pickle
@@ -13,13 +14,11 @@ MATRIX_PATH = os.environ.get("MATRIX_PATH")
 
 def load_model():
   global _last_loaded
-  global _votes
-  global _votes_csr
+  global _csr
   global _model
   global _posts_to_id
   global _ids_to_post
-  _votes = load_npz(MATRIX_PATH + "/base-sparse.npz")
-  _votes_csr = _votes.tocsr()
+  _csr = load_npz(MATRIX_PATH + "/csr")
   with open(MATRIX_PATH + "/i2p.pickle", "rb") as file:
     _ids_to_post = pickle.load(file)
   with open(MATRIX_PATH + "/p2i.pickle", "rb") as file:
@@ -42,10 +41,10 @@ def set_cors(response):
 @app.route("/recommend/<int:user_id>")
 @basic_auth.required
 def recommend(user_id):
-  global _votes_csr
+  global _csr
   global _model
   global _ids_to_post
-  matches = _model.recommend(user_id, _votes_csr)
+  matches = _model.recommend(user_id, _csr)
   matches = [(_ids_to_post[idx], score) for idx, score in matches]
   return jsonify(matches)
 
