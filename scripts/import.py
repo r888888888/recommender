@@ -13,15 +13,15 @@ from pathlib import Path
 import datetime
 load_dotenv(find_dotenv())
 
-CONFIDENCE = 40
+CONFIDENCE = 5
 MIN_VOTES = 10
 GBQ_PROJECT_ID = "danbooru-1343"
 GBQ_TABLE = "danbooru_production.post_votes"
 GBQ_KEY_PATH = os.environ.get("GOOGLE_JSON_KEY")
 MATRIX_PATH = os.environ.get("MATRIX_PATH")
-ALS_FACTORS = 32
+ALS_FACTORS = 256
 ALS_REGULARIZATION = 1e-2
-ALS_ITERATIONS = 10
+ALS_ITERATIONS = 15
 
 def query_gbq(year, month):
   start = '{year}-{month:02d}-01 00:00:00'.format(year=year, month=month)
