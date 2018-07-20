@@ -3,7 +3,6 @@ from dotenv import load_dotenv, find_dotenv
 from flask import Flask, jsonify, request
 from flask_basicauth import BasicAuth
 from implicit.als import AlternatingLeastSquares
-from implicit.approximate_als import NMSLibAlternatingLeastSquares
 import numpy as np
 from scipy.sparse import coo_matrix, load_npz
 import pickle

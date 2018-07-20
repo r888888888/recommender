@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv
 import pickle
 from implicit.als import AlternatingLeastSquares
-from implicit.approximate_als import NMSLibAlternatingLeastSquares
 import signal
 import calendar
 from pathlib import Path
@@ -36,8 +35,9 @@ def seed_gbq():
     query_gbq(2018, month)
 
 def train_model():
-  model = NMSLibAlternatingLeastSquares(use_gpu=False)
+  model = AlternatingLeastSquares(use_gpu=True, use_native=True, dtype=np.float32)
   data = pd.concat([pd.read_pickle(f) for f in Path(MATRIX_PATH).glob("votes/**/*.pickle")])
+  data = data.groupby("user_id").filter(lambda x: x["user_id"].count() >= 10)
   data["user_id"] = data["user_id"].astype("category")
   data["post_id"] = data["post_id"].astype("category")
   confidence = 40
