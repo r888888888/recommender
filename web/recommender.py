@@ -17,7 +17,7 @@ def load_model():
   global _model
   global _posts_to_id
   global _ids_to_post
-  _csr = load_npz(MATRIX_PATH + "/csr")
+  _csr = load_npz(MATRIX_PATH + "/csr.npz")
   with open(MATRIX_PATH + "/i2p.pickle", "rb") as file:
     _ids_to_post = pickle.load(file)
   with open(MATRIX_PATH + "/p2i.pickle", "rb") as file:
