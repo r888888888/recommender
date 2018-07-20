@@ -1,3 +1,4 @@
+import sys
 import os
 import pandas as pd
 import pandas_gbq
@@ -13,8 +14,11 @@ from pathlib import Path
 import datetime
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
+import logging
 load_dotenv(find_dotenv())
 
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+LOGGER = logging.getLogger("recommender.validate")
 GBQ_PROJECT_ID = "danbooru-1343"
 GBQ_TABLE = "danbooru_production.post_votes"
 GBQ_KEY_PATH = os.environ.get("GOOGLE_JSON_KEY")
@@ -109,9 +113,12 @@ class LeavePOutByGroup():
     return self.s.split()
 
 def ndcg_scorer(estimator, X_test):
+  LOGGER.info("starting ndcg scorer for %d", len(X_test))
   truth = UtilityMatrixTransformer(confidence=1).fit_transform(X_test).todense()
   predictions = estimator.predict(X_test)
-  return ndcg_score_matrix(truth, predictions, k=10)
+  results = ndcg_score_matrix(truth, predictions, k=10)
+  LOGGER.info("finished ndcg scorer for %d", len(X_test))
+  return results
 
 from sklearn.model_selection import cross_val_score, GridSearchCV
 
@@ -124,7 +131,8 @@ param_grid = [
   {
     "matrix__confidence": [1, 20, 40],
     "als__factors": [32, 64, 96],
-    "als__regularization": [1e-3]
+    "als__regularization": [1e-2, 1e-3, 1e-4],
+    "als__iterations": [5, 10, 15]
   }
 ]
 
@@ -133,7 +141,7 @@ data = data.groupby("user_id").filter(lambda x: x["user_id"].count() >= 10)
 data["user_id"] = data["user_id"].astype("category")
 data["post_id"] = data["post_id"].astype("category")
 shuffled_train_set = data.sample(frac=1).sort_values("user_id")
-print("data set", shuffled_train_set.shape)
+LOGGER.info("data set", shuffled_train_set.shape)
 grid_search = GridSearchCV(rec_pipeline, param_grid, cv=LeavePOutByGroup(shuffled_train_set, p=5, n_splits=3), scoring=ndcg_scorer, verbose=1, n_jobs=-1)
 grid_search.fit(shuffled_train_set)
 print(grid_search.best_params_)

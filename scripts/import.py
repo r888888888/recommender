@@ -13,10 +13,15 @@ from pathlib import Path
 import datetime
 load_dotenv(find_dotenv())
 
+CONFIDENCE = 40
+MIN_VOTES = 10
 GBQ_PROJECT_ID = "danbooru-1343"
 GBQ_TABLE = "danbooru_production.post_votes"
 GBQ_KEY_PATH = os.environ.get("GOOGLE_JSON_KEY")
 MATRIX_PATH = os.environ.get("MATRIX_PATH")
+ALS_FACTORS = 32
+ALS_REGULARIZATION = 1e-2
+ALS_ITERATIONS = 10
 
 def query_gbq(year, month):
   start = '{year}-{month:02d}-01 00:00:00'.format(year=year, month=month)
@@ -35,13 +40,19 @@ def seed_gbq():
     query_gbq(2018, month)
 
 def train_model():
-  model = AlternatingLeastSquares(use_gpu=True, use_native=True, dtype=np.float32)
+  model = AlternatingLeastSquares(
+    use_gpu=True, 
+    use_native=True, 
+    dtype=np.float32,
+    factors=ALS_FACTORS,
+    regularization=ALS_REGULARIZATION,
+    iterations=ALS_ITERATIONS
+  )
   data = pd.concat([pd.read_pickle(f) for f in Path(MATRIX_PATH).glob("votes/**/*.pickle")])
-  data = data.groupby("user_id").filter(lambda x: x["user_id"].count() >= 10)
+  data = data.groupby("user_id").filter(lambda x: x["user_id"].count() >= MIN_VOTES)
   data["user_id"] = data["user_id"].astype("category")
   data["post_id"] = data["post_id"].astype("category")
-  confidence = 40
-  votes_coo = coo_matrix((np.ones(data.shape[0]), (data["post_id"].cat.codes.copy(), data["user_id"].cat.codes.copy()))) * confidence
+  votes_coo = coo_matrix((np.ones(data.shape[0]), (data["post_id"].cat.codes.copy(), data["user_id"].cat.codes.copy()))) * CONFIDENCE
   votes_csr = votes_coo.tocsr()
   model.fit(votes_coo)
   posts_to_id = {k: v for v, k in enumerate(data["post_id"].cat.categories)}
