@@ -43,7 +43,7 @@ def recommend(user_id):
   global _csr
   global _model
   global _ids_to_post
-  matches = _model.recommend(user_id, _csr)
+  matches = _model.recommend(user_id, _csr, N=30)
   matches = [(_ids_to_post[idx], str(score)) for idx, score in matches]
   return jsonify(matches)
 
