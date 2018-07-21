@@ -44,7 +44,7 @@ def recommend(user_id):
   global _model
   global _ids_to_post
   matches = _model.recommend(user_id, _csr)
-  matches = [(_ids_to_post[idx], score) for idx, score in matches]
+  matches = [(_ids_to_post[idx], str(score)) for idx, score in matches]
   return jsonify(matches)
 
 @app.route("/similar/<int:post_id>")
