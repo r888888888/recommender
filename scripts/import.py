@@ -16,7 +16,7 @@ load_dotenv(find_dotenv())
 CONFIDENCE = 5
 MIN_VOTES = 10
 GBQ_PROJECT_ID = "danbooru-1343"
-GBQ_TABLE = "danbooru_production.post_votes"
+GBQ_TABLE = "danbooru_production.favorites"
 GBQ_KEY_PATH = os.environ.get("GOOGLE_JSON_KEY")
 MATRIX_PATH = os.environ.get("MATRIX_PATH")
 ALS_FACTORS = 128
@@ -27,7 +27,7 @@ def query_gbq(year, month):
   start = '{year}-{month:02d}-01 00:00:00'.format(year=year, month=month)
   stop = "{year}-{month:02d}-{eod} 00:00:00".format(year=year, month=month, eod=calendar.monthrange(year, month)[1])
   limit = 1000000
-  query = 'SELECT post_id, user_id FROM [{project_id}:{table}] WHERE _PARTITIONTIME >= "{start}" AND _PARTITIONTIME < "{stop}" AND score > 0 LIMIT {limit}'.format(project_id=GBQ_PROJECT_ID, table=GBQ_TABLE, start=start, stop=stop, limit=limit)
+  query = 'SELECT post_id, user_id FROM [{project_id}:{table}] WHERE _PARTITIONTIME >= "{start}" AND _PARTITIONTIME < "{stop}" LIMIT {limit}'.format(project_id=GBQ_PROJECT_ID, table=GBQ_TABLE, start=start, stop=stop, limit=limit)
   data = pd.read_gbq(query, project_id=GBQ_PROJECT_ID, private_key=GBQ_KEY_PATH)
   try:
     os.makedirs(MATRIX_PATH + "/votes/{year}".format(year=year))
@@ -49,7 +49,9 @@ def train_model():
     iterations=ALS_ITERATIONS
   )
   data = pd.concat([pd.read_pickle(f) for f in Path(MATRIX_PATH).glob("votes/**/*.pickle")])
+  print(data.shape)
   data = data.groupby("user_id").filter(lambda x: x["user_id"].count() >= MIN_VOTES)
+  print(data.shape)
   data["user_id"] = data["user_id"].astype("category")
   data["post_id"] = data["post_id"].astype("category")
   votes_coo = coo_matrix((np.ones(data.shape[0]), (data["post_id"].cat.codes.copy(), data["user_id"].cat.codes.copy()))) * CONFIDENCE
