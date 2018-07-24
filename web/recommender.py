@@ -17,11 +17,14 @@ def load_model():
   global _model
   global _posts_to_id
   global _ids_to_post
-  _csr = load_npz(MATRIX_PATH + "/csr.npz")
+  global _users_to_id
+  _csr = load_npz(MATRIX_PATH + "/csr.npz").transpose()
   with open(MATRIX_PATH + "/i2p.pickle", "rb") as file:
     _ids_to_post = pickle.load(file)
   with open(MATRIX_PATH + "/p2i.pickle", "rb") as file:
     _posts_to_id = pickle.load(file)
+  with open(MATRIX_PATH + "/u2i.pickle", "rb") as file:
+    _users_to_id = pickle.load(file)
   with open(MATRIX_PATH + "/model.pickle", "rb") as file:
     _model = pickle.load(file)
   _last_loaded = datetime.datetime.now()
@@ -43,7 +46,10 @@ def recommend(user_id):
   global _csr
   global _model
   global _ids_to_post
-  matches = _model.recommend(user_id, _csr, N=30)
+  global _users_to_id
+  if not user_id in _users_to_id:
+    return jsonify(error="user not in database"), 404
+  matches = _model.recommend(_users_to_id[user_id], _csr, N=30)
   matches = [(_ids_to_post[idx], str(score)) for idx, score in matches]
   return jsonify(matches)
 

@@ -58,7 +58,6 @@ def train_model():
     iterations=ALS_ITERATIONS
   )
   data = pd.concat([pd.read_pickle(f) for f in Path(MATRIX_PATH).glob("favs/**/*.pickle")])
-  data = pd.concat([data, ])
   print(data.shape)
   data = data.groupby("user_id").filter(lambda x: x["user_id"].count() >= MIN_FAVS)
   print(data.shape)
@@ -69,10 +68,13 @@ def train_model():
   model.fit(favs_coo)
   posts_to_id = {k: v for v, k in enumerate(data["post_id"].cat.categories)}
   ids_to_post = {k: v for v, k in posts_to_id.items()}
+  users_to_id = {k: v for v, k in enumerate(data["user_id"].cat.categories)}
   with open(MATRIX_PATH + "/i2p.pickle", "wb") as file:
     pickle.dump(ids_to_post, file)
   with open(MATRIX_PATH + "/p2i.pickle", "wb") as file:
     pickle.dump(posts_to_id, file)
+  with open(MATRIX_PATH + "/u2i.pickle", "wb") as file:
+    pickle.dump(users_to_id, file)
   save_npz(MATRIX_PATH + "/csr", favs_csr)
   with open(MATRIX_PATH + "/model.pickle", "wb") as file:
     pickle.dump(model, file)
