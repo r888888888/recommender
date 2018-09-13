@@ -50,7 +50,7 @@ def recommend(user_id):
   if not user_id in _users_to_id:
     return jsonify(error="user not in database"), 404
   uid = _users_to_id[user_id]
-  matches = _model.recommend(uid, _csr.getrow(uid), N=30)
+  matches = _model.recommend(uid, _csr, N=30)
   matches = [(_ids_to_post[idx], str(score)) for idx, score in matches]
   return jsonify(matches)
 
