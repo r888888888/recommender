@@ -35,7 +35,7 @@ def query_csv(year, month):
 def query_gbq(year, month):
   start = '{year}-{month:02d}-01 00:00:00'.format(year=year, month=month)
   stop = "{year}-{month:02d}-{eod} 00:00:00".format(year=year, month=month, eod=calendar.monthrange(year, month)[1])
-  limit = 1000000
+  limit = 10000000
   query = 'SELECT post_id, user_id FROM [{project_id}:{table}] WHERE _PARTITIONTIME >= "{start}" AND _PARTITIONTIME < "{stop}" LIMIT {limit}'.format(project_id=GBQ_PROJECT_ID, table=GBQ_TABLE, start=start, stop=stop, limit=limit)
   data = pd.read_gbq(query, project_id=GBQ_PROJECT_ID, private_key=GBQ_KEY_PATH)
   try:
@@ -45,7 +45,7 @@ def query_gbq(year, month):
   data.to_pickle(MATRIX_PATH + "/favs/{year}/{month}.pickle".format(year=year, month=month))
 
 def seed_gbq():
-  for month in range(1, 8):
+  for month in range(8, 9):
     query_gbq(2018, month)
 
 def train_model():
