@@ -34,9 +34,8 @@ def query_csv(year, month):
 
 def query_gbq(year, month):
   start = '{year}-{month:02d}-01 00:00:00'.format(year=year, month=month)
-  stop = "{year}-{month:02d}-{eod} 00:00:00".format(year=year, month=month, eod=calendar.monthrange(year, month)[1])
-  limit = 10000000
-  query = 'SELECT post_id, user_id FROM [{project_id}:{table}] WHERE _PARTITIONTIME >= "{start}" AND _PARTITIONTIME < "{stop}" LIMIT {limit}'.format(project_id=GBQ_PROJECT_ID, table=GBQ_TABLE, start=start, stop=stop, limit=limit)
+  stop = "{year}-{month:02d}-{eod} 23:59:59".format(year=year, month=month, eod=calendar.monthrange(year, month)[1])
+  query = 'SELECT post_id, user_id FROM [{project_id}:{table}] WHERE _PARTITIONTIME >= "{start}" AND _PARTITIONTIME < "{stop}" LIMIT {limit}'.format(project_id=GBQ_PROJECT_ID, table=GBQ_TABLE, start=start, stop=stop)
   data = pd.read_gbq(query, project_id=GBQ_PROJECT_ID, private_key=GBQ_KEY_PATH)
   try:
     os.makedirs(MATRIX_PATH + "/favs/{year}".format(year=year))
