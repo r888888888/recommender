@@ -8,3 +8,4 @@ Flask
 Flask-BasicAuth
 gunicorn
 sklearn
+boto3
