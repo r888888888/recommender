@@ -83,23 +83,23 @@ if classifier is None:
     with open("y.bin", "wb") as file:
       pickle.dump(y, file)
 
-  classifier = RandomForestClassifier()
-  # X_train, X_test, y_train, y_test = train_test_split(X, y)
+classifier = RandomForestClassifier()
+# X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-  param_grid = { 
-    'n_estimators': [50, 100, 125],
-    'bootstrap': [False],
-    'max_depth': [25, 30, 35],
-    'min_samples_split': [1, 2, 3],
-    'min_samples_leaf': [1, 2]
-  }
+param_grid = { 
+  'n_estimators': [50, 100, 125],
+  'bootstrap': [False],
+  'max_depth': [25, 30, 35],
+  'min_samples_split': [1, 2, 3],
+  'min_samples_leaf': [1, 2]
+}
 
-  random_search = RandomizedSearchCV(estimator=classifier, param_distributions=param_grid, n_iter=100, cv=3, verbose=2, n_jobs=-1)
-  random_search.fit(X, y)
-  print(random_search.best_params_)
+random_search = RandomizedSearchCV(estimator=classifier, param_distributions=param_grid, n_iter=300, cv=3, verbose=2, n_jobs=-1)
+random_search.fit(X, y)
+print(random_search.best_params_)
 
-  with open("model.pickle", "wb") as file:
-    pickle.dump(classifier, file)
+with open("model.pickle", "wb") as file:
+  pickle.dump(classifier, file)
 
 # y_pred = classifier.predict(X_test)
 # importances = {}
