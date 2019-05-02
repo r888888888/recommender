@@ -45,43 +45,42 @@ def extractFeatures(items):
 def extractResults(items):
   return np.array([int(x['is_approved']['BOOL']) for x in items]).astype(int)
 
-if os.path.isfile("model.pickle"):
-  print("Loading pickled model")
-  with open("model.pickle", "rb") as file:
-    classifier = pickle.load(file)
+# if os.path.isfile("model.pickle"):
+#   print("Loading pickled model")
+#   with open("model.pickle", "rb") as file:
+#     classifier = pickle.load(file)
 
-if classifier is None:
-  if os.path.isfile("X.bin"):
-    with open("X.bin", "rb") as file:
-      X = pickle.load(file)
+if os.path.isfile("X.bin"):
+  with open("X.bin", "rb") as file:
+    X = pickle.load(file)
 
-  if os.path.isfile("y.bin"):
-    with open("y.bin", "rb") as file:
-      y = pickle.load(file)
+if os.path.isfile("y.bin"):
+  with open("y.bin", "rb") as file:
+    y = pickle.load(file)
 
-  if X is None and y is None:
-    has_more = True
-    last_evaluated_key = None
-    X = np.zeros(shape=(0, len(fields.keys())))
-    y = np.array([])
-    while has_more:
-      if last_evaluated_key:
-        results = client.scan(TableName="automod_events_production", ExclusiveStartKey=last_evaluated_key)
-      else:
-        results = client.scan(TableName="automod_events_production")
-      if "LastEvaluatedKey" in results:
-        last_evaluated_key = results['LastEvaluatedKey']
-      else:
-        has_more = False
-      features = extractFeatures(results['Items'])
-      results = extractResults(results['Items'])
-      print("Fetched", X.shape[0])
-      X = np.concatenate((X, features))
-      y = np.concatenate((y, results))
-    with open("X.bin", "wb") as file:
-      pickle.dump(X, file)
-    with open("y.bin", "wb") as file:
-      pickle.dump(y, file)
+if X is None and y is None:
+  has_more = True
+  last_evaluated_key = None
+  X = np.zeros(shape=(0, len(fields.keys())))
+  y = np.array([])
+  while has_more:
+    if last_evaluated_key:
+      results = client.scan(TableName="automod_events_production", ExclusiveStartKey=last_evaluated_key)
+    else:
+      results = client.scan(TableName="automod_events_production")
+    if "LastEvaluatedKey" in results:
+      last_evaluated_key = results['LastEvaluatedKey']
+    else:
+      has_more = False
+    features = extractFeatures(results['Items'])
+    results = extractResults(results['Items'])
+    print("Fetched", X.shape[0])
+    X = np.concatenate((X, features))
+    y = np.concatenate((y, results))
+  with open("X.bin", "wb") as file:
+    pickle.dump(X, file)
+  with open("y.bin", "wb") as file:
+    pickle.dump(y, file)
 
 classifier = RandomForestClassifier()
 # X_train, X_test, y_train, y_test = train_test_split(X, y)
@@ -94,7 +93,7 @@ param_grid = {
   'min_samples_leaf': [1, 2]
 }
 
-random_search = RandomizedSearchCV(estimator=classifier, param_distributions=param_grid, n_iter=300, cv=3, verbose=2, n_jobs=-1)
+random_search = RandomizedSearchCV(estimator=classifier, param_distributions=param_grid, n_iter=100, cv=3, verbose=2, n_jobs=-1)
 random_search.fit(X, y)
 print(random_search.best_params_)
 
