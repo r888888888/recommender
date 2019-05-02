@@ -75,11 +75,9 @@ if classifier is None:
         has_more = False
       features = extractFeatures(results['Items'])
       results = extractResults(results['Items'])
-      print("Querying", X.shape)
+      print("Fetched", X.shape[0])
       X = np.concatenate((X, features))
       y = np.concatenate((y, results))
-      if X.shape[0] > 1000000:
-        has_more = False
     with open("X.bin", "wb") as file:
       pickle.dump(X, file)
     with open("y.bin", "wb") as file:
@@ -89,11 +87,11 @@ if classifier is None:
   # X_train, X_test, y_train, y_test = train_test_split(X, y)
 
   param_grid = { 
-    n_estimators: [10, 100, 150],
-    bootstrap: [True, False],
-    max_depth: [None, 10, 20, 30, 40, 50],
-    min_samples_split: [2, 5, 10],
-    min_samples_leaf: [1, 2, 4]
+    'n_estimators': [50, 100, 125],
+    'bootstrap': [False],
+    'max_depth': [25, 30, 35],
+    'min_samples_split': [1, 2, 3],
+    'min_samples_leaf': [1, 2]
   }
 
   random_search = RandomizedSearchCV(estimator=classifier, param_distributions=param_grid, n_iter=100, cv=3, verbose=2, n_jobs=-1)
